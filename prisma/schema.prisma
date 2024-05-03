@@ -1,41 +1,36 @@
+// Conexão com o mongodb
 datasource db {
   provider = "mongodb"
-  url= env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
+// Prisma Client
 generator client {
   provider = "prisma-client-js"
 }
 
-model Post {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  slug     String    @unique
-  title    String
-  body     String
-  author   User      @relation(fields: [authorId], references: [id])
-  authorId String    @db.ObjectId
-  comments Comment[]
-}
-
+// Modelo de usuários
 model User {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  email   String   @unique
-  name    String?
-  address Address?
-  posts   Post[]
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String   // Nome do usuário
+  email      String   @unique
+  reviews    Review[] // Relação oposta com as reviews
 }
 
-model Comment {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  comment String
-  post    Post   @relation(fields: [postId], references: [id])
-  postId  String @db.ObjectId
+model Movie {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  year         Int
+  description  String
+  reviews      Review[] // Relação oposta com as reviews
 }
 
-// Address is an embedded document
-type Address {
-  street String
-  city   String
-  state  String
-  zip    String
+model Review {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  rating     Int
+  comment    String?
+  user       User    @relation(fields: [userId], references: [id])
+  userId     String  @db.ObjectId
+  movie      Movie   @relation(fields: [movieId], references: [id])
+  movieId    String  @db.ObjectId
 }

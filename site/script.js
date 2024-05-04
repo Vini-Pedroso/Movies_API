@@ -27,33 +27,37 @@ function renderGraph(users, movies, reviews) {
     const width = 600;
     const height = 400;
 
-    const svg = d3.select("#graph")
-                  .attr("width", width)
-                  .attr("height", height);
+    const svg = d3.select("body")
+        .append("svg")
+        .attr("id", "graph")
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
 
     const simulation = d3.forceSimulation(nodes)
-                         .force("charge", d3.forceManyBody().strength(-200))
-                         .force("center", d3.forceCenter(width / 2, height / 2))
-                         .force("link", d3.forceLink(links).id(d => d.id).distance(100))
-                         .on("tick", ticked);
+        .force("charge", d3.forceManyBody().strength(-800)) // Aumentar a força de repulsão
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("link", d3.forceLink(links).id(d => d.id).distance(200)) // Ajustar a distância entre os nós
+        .on("tick", ticked);
 
     const link = svg.selectAll(".link")
-                    .data(links)
-                    .enter().append("line")
-                    .attr("class", "link")
-                    .attr("stroke", "yellow") 
-                    .attr("stroke-width", 3)
-                    .on("click", showReview); 
+        .data(links)
+        .enter().append("line")
+        .attr("class", "link")
+        .attr("stroke", "yellow")
+        .attr("stroke-width", 6) // Aumentar a largura dos links
+        .on("click", showReview);
 
     const node = svg.selectAll(".node")
-                    .data(nodes)
-                    .enter().append("g")
-                    .attr("class", d => "node " + (d.name ? "user" : "movie"))
-                    .attr("transform", d => `translate(${d.x},${d.y})`);
+        .data(nodes)
+        .enter().append("g")
+        .attr("class", d => "node " + (d.name ? "user" : "movie"))
+        .attr("transform", d => `translate(${d.x},${d.y})`);
 
     node.append("circle")
-        .attr("r", d => d.name ? 10 : 20) 
-        .attr("fill", d => d.name ? "lightgreen" : "orange"); 
+        .attr("r", d => d.name ? 15 : 30) // Aumentar o tamanho dos nós
+        .attr("fill", d => d.name ? "lightgreen" : "orange");
 
     node.filter(d => d.name)
         .append("text")
@@ -68,16 +72,37 @@ function renderGraph(users, movies, reviews) {
         .attr("dy", 4);
 
     const reviewInfo = d3.select(".review-info")
-                         .style("display", "none");
+        .style("display", "none");
 
-    function ticked() {
-        link.attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
+        const minNodeDistance = 50; // Distância mínima permitida entre os nós
 
-        node.attr("transform", d => `translate(${d.x},${d.y})`);
-    }
+        function ticked() {
+            // Verificar a distância entre os nós e aplicar força de repulsão adicional se estiverem muito próximos
+            nodes.forEach(node => {
+                nodes.forEach(otherNode => {
+                    if (node !== otherNode) {
+                        const dx = node.x - otherNode.x;
+                        const dy = node.y - otherNode.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+                        if (distance < minNodeDistance) {
+                            const separationForce = 0.1; // Ajuste conforme necessário
+                            const angle = Math.atan2(dy, dx);
+                            node.vx += separationForce * Math.cos(angle);
+                            node.vy += separationForce * Math.sin(angle);
+                        }
+                    }
+                });
+            });
+        
+            link.attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+        
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+        
 
     // Função para mostrar o comentário e a avaliação da review ao clicar na linha
     function showReview(event, d) {

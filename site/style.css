@@ -1,0 +1,27 @@
+.node {
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+.user {
+    fill: rgb(23, 248, 23); /* Cor para usuários */
+}
+
+.movie {
+    fill: rgb(231, 71, 22); /* Cor para filmes */
+}
+
+.link {
+    stroke: rgb(47, 142, 219); /* Cor para linhas de conexão */
+    stroke-width: 4px;
+    cursor: pointer;
+}
+
+.review-info {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
+}
